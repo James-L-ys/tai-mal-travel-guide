@@ -91,11 +91,12 @@ main{padding:8px 16px calc(var(--safe-b) + 70px)}
 .ck-btn:active{transform:scale(.95)}
 
 /* Flip Back - Stamp */
-.act-back{position:absolute;inset:0;background:linear-gradient(135deg,var(--green),var(--green-l));color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotateY(180deg);gap:4px;overflow:hidden}
-.stamp-circle{width:64px;height:64px;border:3px dashed rgba(255,255,255,.6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:4px;position:relative;z-index:2}
+.act-back{position:absolute;inset:0;background:linear-gradient(135deg,var(--green),var(--green-l));color:#fff;display:flex;align-items:center;justify-content:center;transform:rotateY(180deg);gap:14px;overflow:hidden;padding:8px 14px}
+.stamp-circle{width:48px;height:48px;border:3px dashed rgba(255,255,255,.6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;position:relative;z-index:2}
 .act-back .ck-label{font-size:15px;font-weight:600;position:relative;z-index:2}
 .act-back .ck-time{font-size:11px;opacity:.75;position:relative;z-index:2}
-.undo-btn{margin-top:10px;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:var(--pill);padding:4px 14px;font-size:11px;font-weight:500;cursor:pointer;font-family:var(--font);position:relative;z-index:2;transition:background .2s}
+.ck-text-wrap{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.undo-btn{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:var(--pill);padding:3px 12px;font-size:11px;font-weight:500;cursor:pointer;font-family:var(--font);position:relative;z-index:2;transition:background .2s;white-space:nowrap;flex-shrink:0}
 .undo-btn:active{background:rgba(255,255,255,.35)}
 .sparkle{position:absolute;pointer-events:none;z-index:1}
 .sparkle-particle{position:absolute;width:4px;height:4px;border-radius:50%;animation:sparkleBurst .8s cubic-bezier(.2,.8,.3,1) forwards}
@@ -660,9 +661,11 @@ function renderDay(c,day,di){
         </div>
         <div class="act-back" onclick="doCheckin('${id}')">
           <div class="stamp-circle${isDone?' stamp-anim':''}">✓</div>
-          <div class="ck-label">已打卡</div>
-          <div class="ck-time">${isDone?checked[id]:''}</div>
-          <button class="undo-btn" onclick="event.stopPropagation();doCheckin('${id}')">撤销打卡</button>
+          <div class="ck-text-wrap">
+            <div class="ck-label">已打卡</div>
+            <div class="ck-time">${isDone?checked[id]:''}</div>
+          </div>
+          <button class="undo-btn" onclick="event.stopPropagation();doCheckin('${id}')">撤销</button>
         </div>
       </div>
     </div>`;
