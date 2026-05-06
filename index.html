@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="泰马路书">
+<meta name="theme-color" content="#2D6A4F">
+<link rel="manifest" href="manifest.json">
+<title>🌴 少女旅行团 · 泰马漫游记</title>
+<style>
+:root{
+  --bg:#FFF8F0;--surface:#FFFFFF;--fg:#2C1810;--fg2:#5C4A3A;--muted:#8B7355;
+  --accent:#E07A5F;--green:#2D6A4F;--green-l:#52B788;--ocean:#00B4D8;
+  --sand:#F5E6D3;--border:#E8DDD0;--shadow:0 2px 12px rgba(44,24,16,.08);
+  --r:16px;--rs:10px;--pill:9999px;
+  --font:'PingFang SC',-apple-system,'Helvetica Neue',sans-serif;
+  --safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font);background:var(--bg);color:var(--fg);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100dvh}
+a{color:var(--accent);text-decoration:none}
+
+/* Header */
+.hdr{position:sticky;top:0;z-index:100;background:rgba(255,248,240,.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding:calc(var(--safe-t) + 8px) 16px 8px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.hdr-title{font-size:17px;font-weight:600;color:var(--fg)}
+.hdr-title span{font-size:12px;font-weight:400;color:var(--muted);margin-left:6px}
+.hdr-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--pill);padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font)}
+.hdr-btn:active{opacity:.8}
+
+/* Bottom Tabs */
+.tabs{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,248,240,.95);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;padding:6px 0 calc(var(--safe-b) + 4px)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;cursor:pointer;-webkit-user-select:none;user-select:none;transition:color .2s}
+.tab svg{width:22px;height:22px;fill:none;stroke:var(--muted);stroke-width:1.8;transition:stroke .2s}
+.tab span{font-size:10px;color:var(--muted);transition:color .2s}
+.tab.active svg{stroke:var(--accent)}
+.tab.active span{color:var(--accent);font-weight:600}
+
+/* Main */
+main{padding:8px 16px 80px}
+
+/* City Panel */
+.city{display:none}
+.city.active{display:block}
+
+/* Hero */
+.hero{border-radius:var(--r);padding:32px 20px;color:#fff;position:relative;overflow:hidden;margin-bottom:16px;min-height:140px;display:flex;flex-direction:column;justify-content:flex-end}
+.hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0}
+.hero-overlay{position:absolute;inset:0;z-index:1}
+.hero-content{position:relative;z-index:2}
+.hero h2{font-size:28px;font-weight:700;margin-bottom:4px;text-shadow:0 1px 4px rgba(0,0,0,.2)}
+.hero .sub{font-size:14px;opacity:.9;margin-bottom:2px}
+.hero .dates{font-size:12px;opacity:.75}
+
+/* Section Headers */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 0 8px;cursor:pointer;-webkit-user-select:none;user-select:none}
+.sec-hdr h3{font-size:17px;font-weight:600;color:var(--fg)}
+.sec-hdr .chevron{width:20px;height:20px;transition:transform .3s;color:var(--muted)}
+.sec-hdr.open .chevron{transform:rotate(180deg)}
+.sec-body{overflow:hidden;transition:max-height .35s ease,opacity .3s;max-height:0;opacity:0}
+.sec-body.open{max-height:5000px;opacity:1}
+
+/* Day Card */
+.day{background:var(--surface);border-radius:var(--r);margin-bottom:12px;box-shadow:var(--shadow);overflow:hidden}
+.day-hdr{padding:14px 16px;cursor:pointer;-webkit-user-select:none;user-select:none;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);transition:background .15s}
+.day-hdr:active{background:var(--sand)}
+.day-num{width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.day-info{flex:1;min-width:0}
+.day-info .title{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day-info .subtitle{font-size:12px;color:var(--muted)}
+.day-chevron{width:18px;height:18px;transition:transform .3s;color:var(--muted);flex-shrink:0}
+.day.open .day-chevron{transform:rotate(180deg)}
+.day-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.day.open .day-body{max-height:5000px}
+.day-content{padding:12px 16px 16px}
+
+/* Activity Card (Flip) */
+.act{perspective:800px;margin-bottom:10px}
+.act-inner{position:relative;transition:transform .6s;transform-style:preserve-3d}
+.act.flipped .act-inner{transform:rotateY(180deg)}
+.act-front,.act-back{-webkit-backface-visibility:hidden;backface-visibility:hidden;border-radius:var(--rs);padding:12px 14px}
+.act-front{background:var(--sand);display:flex;align-items:flex-start;gap:10px}
+.act-front .icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.act-front .info{flex:1;min-width:0}
+.act-front .info .name{font-size:14px;font-weight:500;line-height:1.4}
+.act-front .info .note{font-size:12px;color:var(--muted);margin-top:2px}
+.act-front .info .time{font-size:11px;color:var(--accent);font-weight:500}
+.ck-btn{flex-shrink:0;background:var(--green);color:#fff;border:none;border-radius:var(--pill);padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);align-self:center;white-space:nowrap;transition:all .2s}
+.ck-btn:active{transform:scale(.95)}
+
+/* Flip Back - Stamp */
+.act-back{position:absolute;inset:0;background:linear-gradient(135deg,var(--green),var(--green-l));color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotateY(180deg);gap:4px}
+.stamp-circle{width:64px;height:64px;border:3px dashed rgba(255,255,255,.6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:4px}
+.act-back .ck-label{font-size:15px;font-weight:600}
+.act-back .ck-time{font-size:11px;opacity:.75}
+
+/* Hotel/Transport cards */
+.info-card{background:var(--sand);border-radius:var(--rs);padding:10px 14px;margin-bottom:8px;font-size:13px}
+.info-card .label{font-size:11px;color:var(--muted);margin-bottom:2px}
+.info-card .val{font-size:13px;line-height:1.5}
+
+/* Food/Shop cards */
+.food-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.food-card{background:var(--surface);border-radius:var(--rs);padding:12px;box-shadow:var(--shadow)}
+.food-card .fname{font-size:14px;font-weight:600;margin-bottom:2px}
+.food-card .fdesc{font-size:12px;color:var(--muted);line-height:1.4}
+.food-card .fshop{font-size:11px;color:var(--accent);margin-top:4px}
+
+/* Shop list */
+.shop-list{margin-top:8px}
+.shop-item{padding:10px 14px;background:var(--surface);border-radius:var(--rs);margin-bottom:8px;box-shadow:var(--shadow)}
+.shop-item .sname{font-size:14px;font-weight:600}
+.shop-item .sdetail{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* Etiquette */
+.etiq-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.etiq-card{background:var(--surface);border-radius:var(--rs);padding:12px;text-align:center;box-shadow:var(--shadow)}
+.etiq-card .eicon{font-size:24px;margin-bottom:4px}
+.etiq-card .etitle{font-size:13px;font-weight:600;margin-bottom:2px}
+.etiq-card .edesc{font-size:11px;color:var(--muted);line-height:1.4}
+
+/* Durian table */
+.durian-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;background:var(--surface);border-radius:var(--rs);overflow:hidden}
+.durian-table th{background:var(--green);color:#fff;padding:8px 6px;text-align:left;font-weight:500;font-size:11px}
+.durian-table td{padding:6px;border-bottom:1px solid var(--border);vertical-align:top}
+.durian-table tr:last-child td{border-bottom:none}
+
+/* Prep Panel */
+.prep-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .3s}
+.prep-overlay.open{opacity:1;pointer-events:auto}
+.prep-panel{position:fixed;top:0;right:0;bottom:0;width:min(92vw,400px);z-index:201;background:var(--bg);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(var(--safe-t) + 16px) 20px 40px}
+.prep-overlay.open .prep-panel{transform:translateX(0)}
+.prep-close{position:sticky;top:0;float:right;background:var(--sand);border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--fg)}
+.prep-title{font-size:22px;font-weight:700;margin:8px 0 20px;clear:both}
+.prep-sec{margin-bottom:24px}
+.prep-sec h4{font-size:15px;font-weight:600;margin-bottom:10px;color:var(--green);display:flex;align-items:center;gap:6px}
+.prep-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:14px}
+.prep-check{width:20px;height:20px;border:2px solid var(--border);border-radius:5px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;transition:all .2s;margin-top:1px}
+.prep-check.done{background:var(--green);border-color:var(--green);color:#fff}
+.prep-note{font-size:12px;color:var(--muted);font-style:italic;margin-top:8px;padding:8px 12px;background:var(--sand);border-radius:var(--rs)}
+
+/* Progress bar */
+.progress-wrap{margin-bottom:16px}
+.progress-label{font-size:13px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+.progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green-l));border-radius:3px;transition:width .4s}
+
+/* Day progress */
+.day-prog{display:flex;align-items:center;gap:8px;padding:8px 16px 12px}
+.day-prog .prog-text{font-size:12px;color:var(--muted)}
+.day-prog .prog-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.day-prog .prog-fill{height:100%;background:var(--green-l);border-radius:2px;transition:width .4s}
+
+/* History timeline */
+.timeline{margin-top:12px;padding-left:20px;border-left:2px solid var(--green-l)}
+.tl-year{position:relative;padding:8px 0 8px 12px;font-size:13px}
+.tl-year::before{content:'';position:absolute;left:-26px;top:14px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--surface)}
+
+/* Tag */
+.tag{display:inline-block;padding:2px 8px;border-radius:var(--pill);font-size:11px;font-weight:500}
+.tag-green{background:rgba(45,106,79,.1);color:var(--green)}
+.tag-accent{background:rgba(224,122,95,.1);color:var(--accent)}
+.tag-ocean{background:rgba(0,180,216,.1);color:var(--ocean)}
+
+/* Animations */
+@keyframes stampIn{0%{transform:scale(2) rotate(-15deg);opacity:0}60%{transform:scale(.9) rotate(3deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+.stamp-anim{animation:stampIn .5s cubic-bezier(.4,0,.2,1)}
+
+/* Safari fixes */
+@supports (-webkit-touch-callout:none){
+  .act-back{position:absolute;inset:0}
+  .day-body{transition:none}
+  .sec-body{transition:none}
+}
+
+/* Utility */
+.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}
+.text-center{text-align:center}.text-sm{font-size:12px;color:var(--muted)}.text-accent{color:var(--accent)}
+.flex-between{display:flex;justify-content:space-between;align-items:center}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-title">🌴 少女旅行团<span>19天 · 泰马漫游记</span></div>
+  <button class="hdr-btn" onclick="togglePrep()">📋 准备</button>
+</header>
+
+<main id="app"></main>
+
+<nav class="tabs" id="tabs"></nav>
+
+<div class="prep-overlay" id="prepOv" onclick="if(event.target===this)togglePrep()">
+  <div class="prep-panel" id="prepPanel"></div>
+</div>
+
+<script>
+// ── Trip Data ──
+const CITIES=[
+{id:'cm',name:'清迈',sub:'兰纳古都',dates:'5/9–5/12',color:'#2D6A4F',
+ gradient:'linear-gradient(135deg,#2D6A4F 0%,#40916C 40%,#52B788 100%)',
+ img:'https://images.unsplash.com/photo-1578157695179-d7b7ddeb2f53?w=800&q=80',
+history:[
+  {y:'1296年',t:'孟莱王定都清迈'},
+  {y:'1383年',t:'素贴山双龙寺建成'},
+  {y:'15世纪',t:'迪洛嘎腊王黄金时代'},
+  {y:'1558年',t:'缅甸占领，持续200年'},
+  {y:'19世纪末',t:'并入暹罗，兰纳历史落幕'}
+],
+intro:'"清迈"意为"新城"，由孟莱王于1296年建立，是兰纳王国的首都。与元明两朝交往密切，曾被称为"八百媳妇国"。',
+etiq:[
+  {i:'🛕',t:'寺庙着装',d:'遮膝遮肩，脱鞋入殿'},
+  {i:'👑',t:'尊重皇室',d:'不可议论或踩踏钱币'},
+  {i:'🧘',t:'头部神圣',d:'勿摸他人头，脚不指人/佛像'},
+  {i:'🍽️',t:'小费',d:'一般20-100铢，硬币多给乞丐'}
+],
+countryShop:[
+  {i:'🥭',t:'水果干',d:'芒果干、榴莲干、龙眼干',l:'📍 清迈瓦洛洛 / 曼谷Big C'},
+  {i:'🌿',t:'泰式香料',d:'冬阴功酱、咖喱粉',l:'📍 瓦洛洛 / 曼谷超市'},
+  {i:'👜',t:'藤编包/大象裤',d:'度假感满满',l:'📍 清迈藤编街 / 夜市'},
+  {i:'🍵',t:'泰式奶茶',d:'手标红茶粉+炼乳',l:'📍 7-11或超市'},
+  {i:'💊',t:'泰国药膏',d:'青草膏、鼻通、酸痛膏',l:'📍 7-11 / Boots'},
+  {i:'🍫',t:'皇家牛奶片',d:'经典伴手礼',l:'📍 7-11'}
+],
+shopNote:'💡 瓦洛洛市场现金支付可砍价；Big C和7-11支持支付宝/微信。',
+days:[
+  {d:'5/9',wd:'周六',t:'✈️ 抵达清迈',s:'🌙 夜航降落',items:[
+    {i:'✈️',t:'龙嘉T2 → 21:50 清迈',n:'🛫 13:05起飞',ck:1},
+    {i:'🚕',t:'打车至古城民宿',n:'120–150泰铢/车 (≈25–32元) · 打两辆',ck:1}
+  ],hotel:{n:'古城民宿 (Airbnb)',a:'53 Singharat Road, Si Phum, Mueang Chiang Mai, Chiang Mai 50200',p:'+66 85 040 2508'},note:'😴 好好休息，准备开玩'},
+  {d:'5/10',wd:'周日',t:'🛍️ 集市寻宝',s:'🍍 水果自由 · 淘裙子鞋子',items:[
+    {i:'🌴',t:'椰林集市、JJ集市、孟买市场、瓦洛洛(可选)',n:'买裙子鞋子，吃榴莲和热带水果',ck:1},
+    {i:'🌙',t:'周日夜市',n:'古城主街，必去！',ck:1}
+  ]},
+  {d:'5/11',wd:'周一',t:'👗 宁曼路漫步',s:'🍛 Aunt Aoy Kitchen · 逛街',items:[
+    {i:'🍳',t:'Aunt Aoy Kitchen 泰餐',n:'10:00 · 需预约',ck:1},
+    {i:'🛒',t:'宁曼路逛街',n:'One Nimman、niap.cnx / PALIT / Oab.Studio、Nicha 天然棉服饰',ck:1},
+    {i:'📸',t:'塔佩门打卡',n:'',ck:1},
+    {i:'🌙',t:'清迈大学后门夜市',n:'',ck:1}
+  ]},
+  {d:'5/12',wd:'周二',t:'🐘 大象与素贴山',s:'🌿 自然一日',items:[
+    {i:'🐘',t:'大象营半日游',n:'',ck:1},
+    {i:'⛰️',t:'素贴山双龙寺',n:'',ck:1}
+  ]}
+],
+food:[
+  {n:'泰北咖喱面',d:'黄咖喱椰奶汤，配炸面',s:'Khao Soi Khun Yai 4.6★'},
+  {n:'打抛饭',d:'圣罗勒叶炒肉末+溏心蛋',s:'Aoyjai Kitchen 4.9★'},
+  {n:'船面',d:'小碗浓汤米粉，酸甜辣',s:'Ongtong 4.3★'},
+  {n:'芒果糯米饭',d:'椰浆糯米+成熟芒果',s:'周日夜市/后门夜市'},
+  {n:'泰北猪血米线',d:'发酵米粉+猪血番茄辣酱',s:'Kra Thin 4.9★'},
+  {n:'陶罐小火锅',d:'草药汤底，猪肉/海鲜',s:'Mooyim JimJum 4.1★'}
+],
+foodNote:'✨ 更多推荐：红烧牛肉面 Blue Noodle、瓦罐小火锅、泰式凉拌粉、炸鱼浆等可在清迈大学后门夜市及古城周边探索。',
+shopping:[
+  {n:'🛒 必逛集市',d:'椰林集市·周末 / JJ集市·手作衣服 / 周日夜市·古城主街 / 孟买市场·水果批发'},
+  {n:'👗 宁曼路&店铺',d:'One Nimman购物中心 / niap.cnx / PALIT / Oab.Studio / Nicha天然棉服饰'},
+  {n:'🧥 古城周边',d:'卖凉鞋(口碑极好) / 塔佩门附近小巷精品店'}
+],
+shopTip:'💡 清迈裙子/凉鞋物美价廉，建议行李箱留空！'
+},
+
+{id:'bk',name:'曼谷',sub:'天使之城',dates:'5/13–5/16',color:'#D4A373',
+ gradient:'linear-gradient(135deg,#D4A373 0%,#E9C46A 40%,#F4A261 100%)',
+ img:'https://images.unsplash.com/photo-1562602833-0f4ab2fc46e3?w=800&q=80',
+history:[
+  {y:'1767年',t:'大城王朝灭亡，郑信复国'},
+  {y:'1782年',t:'拉玛一世建都曼谷'},
+  {y:'19世纪末',t:'朱拉隆功大帝改革'}
+],
+intro:'1767年大城王朝被缅甸所灭，祖籍广东的华裔将领郑信率众复国，建都吞武里。1782年，拉玛一世迁都曼谷，开启曼谷王朝。历代泰王皆有中文名且姓"郑"。19世纪末，拉玛五世推行现代化改革，使暹罗成为东南亚唯一未沦为殖民地的国家。',
+days:[
+  {d:'5/13',wd:'周三',t:'✈️ 飞往曼谷',s:'🏙️ 抵达天使之城',items:[
+    {i:'✈️',t:'清迈 → 廊曼',n:'🛫 11:05 → 12:15',ck:1},
+    {i:'🚕',t:'打车至素坤逸别墅',n:'300–400泰铢/车 (≈63–84元) · 打两辆',ck:1},
+    {i:'💆',t:'长时段马杀鸡',n:'需预约',ck:1},
+    {i:'🌙',t:'朱拉隆功夜市',n:'',ck:1}
+  ],hotel:{n:'素坤逸别墅 (Agoda)',a:'71 Soi Sukhumvit 95/1, Bang Chak, Phra Khanong, Bangkok 10260',p:'+66 81 117 0826'}},
+  {d:'5/14',wd:'周四',t:'🛕 曼谷经典',s:'🏯 寺庙与河畔',items:[
+    {i:'🛕',t:'大皇宫、玉佛寺',n:'',ck:1},
+    {i:'🛕',t:'卧佛寺',n:'',ck:1},
+    {i:'🛕',t:'郑王庙',n:'',ck:1},
+    {i:'🚢',t:'暹罗天地(游船)',n:'',ck:1},
+    {i:'🌙',t:'码头夜市',n:'',ck:1}
+  ]},
+  {d:'5/15',wd:'周五',t:'🦞 海鲜与大佛',s:'🦐 吞武里市场',items:[
+    {i:'🐟',t:'吞武里海鲜市场',n:'',ck:1},
+    {i:'🛕',t:'水门寺大佛',n:'',ck:1}
+  ]},
+  {d:'5/16',wd:'周六',t:'🛍️ 自由购物',s:'🛒 买买买',items:[
+    {i:'🛍️',t:'购物日',n:'Siam Paragon · Siam Square · Central World',ck:1},
+    {i:'🏮',t:'唐人街(可选)',n:'',ck:1}
+  ]}
+],
+food:[
+  {n:'蟹肉炒饭',d:'粒粒分明+饱满蟹肉',s:'Here Hai 米其林'},
+  {n:'咖喱炒蟹肉',d:'香浓咖喱+鲜甜蟹肉',s:'Som Som 4.3★'},
+  {n:'冬荫功妈妈面',d:'酸辣汤底+脆皮猪肉',s:'Jeh O Chula 宵夜名店'},
+  {n:'冬阴功汤',d:'酸辣虾汤，香茅柠檬叶',s:'朱拉隆功夜市'},
+  {n:'水门鸡饭',d:'滑嫩鸡肉+香米饭',s:'红大哥 老字号'},
+  {n:'烤面包蘸奶',d:'炭烤吐司+浓郁炼奶',s:'牛奶小子 4.0★'}
+],
+foodNote:'✨ 唐人街隐藏美味：林老五鱼丸面（80年老店，米其林推荐）、恳记凉茶（双葫芦造型，古法消暑）、陈亿粿条店（60年粿汁老店）。',
+shopping:[
+  {n:'👗 Siam商圈',d:'Siam Paragon · 高端百货 / Siam Square · 本土潮牌(Matchbox, SOS, GENTLEWOMAN) / Central World · 综合购物'},
+  {n:'🌿 Chatuchak周末市场',d:'周六日开放，行程5/16为周六。区域巨大，建议一早前往'},
+  {n:'💡 其他',d:'Terminal 21 · 航站楼主题 / Platinum Mall · 平价女装'}
+]
+},
+
+{id:'lp',name:'丽贝岛',sub:'沧海遗珠',dates:'5/17–5/21',color:'#00B4D8',
+ gradient:'linear-gradient(135deg,#023E8A 0%,#0077B6 30%,#00B4D8 60%,#48CAE4 100%)',
+ img:'https://images.unsplash.com/photo-1557606091-7ae3f0724948?w=800&q=80',
+history:[
+  {y:'1909年',t:'拉玛五世将丽贝岛赐予乌拉-拉沃伊人'},
+  {y:'2016年',t:'因电影《机械师2》取景而走红'}
+],
+intro:'丽贝岛的原住民是乌拉-拉沃伊人（Urak Lawoi），意为"海上之人"，属于"Chao Leh"海洋游牧民族。"Lipe"意为"平坦的纸"，因岛屿地势平坦得名。被誉为"泰国的马尔代夫"。',
+days:[
+  {d:'5/17',wd:'周日',t:'🏝️ 奔向丽贝',s:'⛴️ 跳岛开始',items:[
+    {i:'✈️',t:'廊曼 → 合艾',n:'🛫 8:35 → 10:05',ck:1},
+    {i:'⛴️',t:'车船联运 → 丽贝岛',n:'11:00 → 13:30 · 酒店含接送',ck:1},
+    {i:'🌅',t:'上岛看日落',n:'',ck:1}
+  ],hotel:{n:'田园概念度假村 Idyllic Concept Resort',p:'+66 81 802 5453'}},
+  {d:'5/18–5/21',wd:'周一–周四',t:'🌊 丽贝慢生活',s:'🤿 浮潜 · 放空 · 环岛',items:[
+    {i:'🤿',t:'两天出海浮潜',n:'',ck:1},
+    {i:'🏖️',t:'沙滩放松',n:'',ck:1},
+    {i:'💆',t:'马杀鸡',n:'',ck:1},
+    {i:'🛶',t:'皮划艇',n:'',ck:1},
+    {i:'🏝️',t:'阿当岛徒步',n:'',ck:1}
+  ]}
+],
+food:[
+  {n:'咖喱蟹',d:'新鲜螃蟹+浓郁咖喱',s:'Thai Drum 4.8★'},
+  {n:'芝士披萨',d:'步行街附近现烤',s:'Elephant Beach Bar'},
+  {n:'泰式炒饭',d:'正宗泰菜，价格实惠',s:'Papaya Mama 4.5★'},
+  {n:'日落鸡尾酒',d:'海边酒吧，火舞表演',s:'Zodiac Beach Bar'},
+  {n:'早午餐/咖啡',d:'海岛绿洲，环境舒适',s:'Bloom Café 4.8★'},
+  {n:'炼奶煎饼',d:'步行街晚上现做',s:'步行街夜市'}
+],
+foodNote:'💡 岛上海鲜价格较高，推荐Thai Drum；Zodiac日落酒吧需提前占位看夕阳。'
+},
+
+{id:'lk',name:'兰卡威',sub:'传奇之岛',dates:'5/22–5/23',color:'#E9A319',
+ gradient:'linear-gradient(135deg,#1A535C 0%,#4ECDC4 40%,#F7FFF7 100%)',
+ img:'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=800&q=80',
+history:[
+  {y:'约2世纪',t:'狼牙修遗址'},
+  {y:'约200年前',t:'玛苏里公主诅咒"七代无法繁荣"'},
+  {y:'1987年',t:'成为免税港'},
+  {y:'2007年',t:'列为世界地质公园'}
+],
+intro:'"兰卡威"意为"红褐色老鹰"，由99座石灰岩岛屿组成。明代《郑和航海图》将其记作"龙牙交椅"。玛苏里公主被诬陷处死前发出"七代无法繁荣"的诅咒，传说其流出的血为白色，岛民逃离前埋下的粮食化为"焦米"。',
+etiq:[
+  {i:'🕌',t:'清真寺',d:'脱鞋入内，女性遮发'},
+  {i:'🍽️',t:'用餐礼仪',d:'右手用餐，左手视为不洁'},
+  {i:'🧕',t:'尊重习俗',d:'尊重伊斯兰习俗，勿摸他人头'},
+  {i:'🚫',t:'禁酒',d:'公共场合禁酒，勿食猪肉制品'}
+],
+countryShop:[
+  {i:'☕',t:'白咖啡',d:'亚发、均记等老字号',l:'📍 槟城/超市'},
+  {i:'🥮',t:'豆沙饼/淡汶饼',d:'义香饼家（169年老店）',l:'📍 槟城'},
+  {i:'🍫',t:"Beryl's巧克力",d:'榴莲/提拉米苏口味',l:'📍 兰卡威免税店/超市'},
+  {i:'🍾',t:'免税酒类',d:'威士忌/红酒比大陆便宜25-50%',l:'📍 兰卡威全岛免税'},
+  {i:'💊',t:'豆蔻膏/豆蔻油',d:'提神醒脑、驱风',l:'📍 槟城药妆店'},
+  {i:'🍲',t:'肉骨茶包',d:'A1、游建好等品牌',l:'📍 各大超市'}
+],
+days:[
+  {d:'5/22',wd:'周五',t:'⛵ 跳岛兰卡威',s:'🚢 前往兰卡威',items:[
+    {i:'🛳️',t:'丽贝岛乘船 → 兰卡威',n:'12:30 → 15:00',ck:1},
+    {i:'🚕',t:'打车至酒店',n:'24–25马币/车 (≈40–41元) · 打两辆',ck:1}
+  ],hotel:{n:'康赛尼特色酒店 Signature by The Concept',a:'31, Jalan Mahawangsa 1, Kuah, Langkawi, Kedah 07000',p:'+60 4-961 1077'}},
+  {d:'5/23',wd:'周六',t:'🪂 兰卡威探险',s:'🌉 天空之桥 & 落日巡航',items:[
+    {i:'🪂',t:'拖伞或天空之桥',n:'需预约',ck:1},
+    {i:'🌅',t:'落日巡航',n:'需预约',ck:1}
+  ]}
+],
+food:[
+  {n:'奶油虎虾',d:'奶香浓郁，虎虾弹牙',s:'真浪花园 4.7★'},
+  {n:'咸蛋蟹',d:'咸蛋黄沙沙裹蟹',s:'椰林中华料理'},
+  {n:'酸辣咖喱魔鬼鱼',d:'咖喱酸辣酱汁烤鱼',s:'马来风味特色'},
+  {n:'椰浆饭',d:'椰奶饭配辣酱小鱼',s:'夜市/早餐店'},
+  {n:'沙爹串',d:'炭烤肉串蘸花生酱',s:'夜市随处可见'},
+  {n:'马来网饼',d:'蜂窝状酥脆煎饼',s:'Mamak档'}
+],
+foodNote:'✨ 推荐餐厅：真浪花园海鲜（奶油虎虾）、椰林中华料理（咸蛋蟹）、Hidden Langkawi（日落酒吧）、Telaga海鲜、欢乐天饮食中心。',
+nightMarket:'🛒 夜市（Pasar Malam）每天不同地点轮换。椰浆饭、沙爹、煎蕊必尝。珍南海滩晚上热闹。',
+dutyFree:'🍫 免税购物：Cenang Mall二楼巧克力最划算。费列罗、Kinder超便宜。酒类比大陆便宜25-50%。🛍️ 大型商场：Langkawi Parade Megamall · 瓜镇一站式免税店。'
+},
+
+{id:'pg',name:'槟城',sub:'美食之都',dates:'5/24–5/27',color:'#E07A5F',
+ gradient:'linear-gradient(135deg,#BC6C25 0%,#DDA15E 40%,#FEFAE0 100%)',
+ img:'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=800&q=80',
+history:[
+  {y:'15世纪',t:'《郑和航海图》上便有标记'},
+  {y:'1786年',t:'莱特船长开辟为自由港，命名"乔治市"'},
+  {y:'孙中山',t:'曾五访槟城，创办《光华日报》并策划黄花岗起义'},
+  {y:'2008年',t:'乔治市列为世界文化遗产'}
+],
+intro:'槟城因遍植槟榔得名"槟榔屿"。1786年莱特船长开辟为自由港，大量闽粤移民涌入，与马来、印度文化融合形成独特的娘惹文化。',
+days:[
+  {d:'5/24',wd:'周日',t:'✈️ 飞槟城 · 榴莲园',s:'🦔 入住榴莲园',items:[
+    {i:'✈️',t:'兰卡威 → 槟城',n:'🛫 12:30 → 13:10',ck:1},
+    {i:'🚕',t:'打车至榴莲园',n:'30–40马币/车 (≈50–66元) · 打两辆',ck:1}
+  ],hotel:{n:'留连轩 Durian Guesthouse',a:'311 Kampung Genting, Mk 7, Balik Pulau, Penang 11000',p:'微信联系园主'}},
+  {d:'5/25–5/26',wd:'周一–周二',t:'🦔 榴莲 · 乔治市',s:'🌳 浮罗山背榴莲 + 乔治市美食',items:[
+    {i:'🌳',t:'浮罗山背各榴莲园吃榴莲！',n:'',ck:1},
+    {i:'🎨',t:'乔治市壁画街',n:'',ck:1},
+    {i:'🏠',t:'姓周桥',n:'',ck:1},
+    {i:'🍜',t:'槟城叻沙、炒粿条、煎蕊',n:'',ck:1}
+  ],hotel:{n:'弗拉姆旅馆 The Frame Guesthouse',a:'168, Lebuh Chulia, George Town, Penang 10200',p:'+60 4-263 8807',transport:'🚕 留连轩 → 弗拉姆旅馆 · 35–50马币/车 (≈58–83元) · 打两辆'}},
+  {d:'5/27',wd:'周三',t:'🛬 返程',s:'✈️ 回家',items:[
+    {i:'🚕',t:'酒店打车至槟城机场',n:'30–40马币/车 (≈50–66元) · 打两辆',ck:1},
+    {i:'✈️',t:'槟城 → 浦东T2',n:'🛫 15:30 → 20:50',ck:1}
+  ],note:'💕 少女旅行团泰马漫游记，完美收官！\n🌺 一路向阳 · 少女旅行团 🌴'}
+],
+food:[
+  {n:'炒粿条',d:'猪油爆炒，加血蚶',s:'德成饭店/小贩中心'},
+  {n:'福建虾面',d:'虾汤鲜甜浓郁',s:'青屋虾面 米其林'},
+  {n:'亚参叻沙',d:'酸辣鱼汤米粉',s:'槟榔律驰名叻沙'},
+  {n:'卤面',d:'浓稠卤汁配黄面',s:'汕头街/茶室'},
+  {n:'叁巴虾煮臭豆',d:'叁巴酱炒虾仁臭豆',s:'娘惹餐厅'},
+  {n:'煎蕊',d:'椰糖冰沙绿豆粉条',s:'汕头街/景贵街'}
+],
+foodNote:'✨ 推荐餐厅：德成饭店（排队王，错过饭点）、多春茶室（碳烤面包）、莫定标娘惹粿厂（娘惹糕）、天皇鸡脚粿条汤（米其林必比登）、Auntie Gaik Lean\'s（米其林一星娘惹菜）。',
+nightMarket:'🍢 汕头街夜市：天皇鸡脚、鸭粥粿汁、四果汤、炒粿条、蚝煎一站式。🏮 Red Garden：露天美食广场，烤魔鬼鱼、叻沙等。',
+souvenir:'🎁 伴手礼：义香豆沙饼（169年）、莫定标娘惹糕、Beryl\'s榴莲巧克力。'
+}
+];
+
+// Durian Guide
+const DURIAN={
+fruits:['5月中旬至8月是槟城榴莲季，浮罗山背为核心产区，拥有超过30个品种，全部树上自然熟落，风味远胜进口榴莲。'],
+vars:[
+  {n:'猫山王',a:'D197',f:'鲜黄色，核极小',t:'甜中带苦，奶油顺滑',p:'35–75',c:'60–130'},
+  {n:'黑刺',a:'D200',f:'深焦橙色',t:'先甜后苦，酒香尾韵',p:'40–95',c:'69–164'},
+  {n:'黑金',a:'—',f:'深橙色，肉厚核小',t:'苦甜交织，口感绵密',p:'45–85',c:'78–147'},
+  {n:'红虾',a:'D175',f:'橙红色，软滑如冰淇淋',t:'甜中带苦微酸，层次丰富',p:'25–40',c:'43–69'},
+  {n:'葫芦',a:'D163',f:'淡黄色，厚实',t:'奶香浓郁，巧克力风味',p:'25–40',c:'43–69'},
+  {n:'甲必利',a:'Capri',f:'淡黄色，肉厚',t:'甜糯带微苦，香气浓郁',p:'25–45',c:'43–78'},
+  {n:'604',a:'D604',f:'金黄色，柔软',t:'甜中带苦，果香浓烈',p:'25–40',c:'43–69'},
+  {n:'金凤',a:'D198',f:'淡黄色，黏口感',t:'微苦带甜，细腻顺滑',p:'30–50',c:'52–86'},
+  {n:'竹脚',a:'D160',f:'淡黄色，纤维少',t:'苦中带甜，层次丰富',p:'25–40',c:'43–69'},
+  {n:'坤宝红肉',a:'D164',f:'亮橙色，柔软细腻',t:'甜中带苦，咖啡风味',p:'25–35',c:'43–61'},
+  {n:'青皮15',a:'D165',f:'淡黄色',t:'清甜微苦，传统风味',p:'20–30',c:'35–52'},
+  {n:'林凤娇',a:'—',f:'淡黄色，肉厚',t:'甜糯适中，香气独特',p:'25–40',c:'43–69'},
+  {n:'小红',a:'Ang Bak Kia',f:'橙红色，软滑',t:'甜中带苦，风味浓郁',p:'25–40',c:'43–69'},
+  {n:'小龙',a:'—',f:'金黄色，肉厚',t:'甜糯微苦，果香清新',p:'20–35',c:'35–61'},
+  {n:'花龙',a:'—',f:'淡黄色，肉厚',t:'甜中带微苦，口感绵密',p:'20–35',c:'35–61'},
+  {n:'蜈蚣',a:'Lipan',f:'淡黄色，纤维少',t:'清甜微苦，传统老品种',p:'20–30',c:'35–52'},
+  {n:'XO',a:'D24',f:'淡黄，纤维感',t:'苦味重，酒精发酵香',p:'20–35',c:'35–61'}
+],
+farms:[
+  {n:'🏡 宝盛园',d:'三代传承，有机种植。榴莲自助餐70-110马币任吃，可住宿，需提前预订'},
+  {n:'🌳 128榴莲园',d:'老板会中文，可微信预订。树上熟，当天掉什么吃什么'},
+  {n:'🏕️ 榴莲莊',d:'DurianTreeHouse 4.3★ · 俯瞰山景吃榴莲'},
+  {n:'🍈 榴莲天下',d:'4.7★ (197) 水果批发 · 品种丰富拼盘'},
+  {n:'🌴 218/808榴莲园',d:'价格比市区便宜20% · 黑刺、红虾等'}
+],
+cooling:[
+  {n:'🥤 豆蔻水',d:'槟城特产，褐红色酸甜清热',l:'义合豆蔻厂/超市'},
+  {n:'🍐 沙梨水',d:'沙梨性寒清热，当地人标配',l:'汕头街/Red Garden'},
+  {n:'🌾 薏米水',d:'利水消肿、健脾祛湿',l:'各大茶室/超市'},
+  {n:'🟣 山竹',d:'榴莲绝配，清热降火',l:'榴莲园/水果摊'}
+],
+tips:[
+  '食用顺序：从清淡到浓郁（青皮→红虾→葫芦→猫山王→黑刺→XO）',
+  '每吃1-2颗榴莲，喝一瓶豆蔻水或吃几颗山竹',
+  '榴莲园建议提前一天预订，上午9-11点品种最全',
+  '榴莲现开现吃，果肉颜色不对可要求换',
+  '5月底周末浮罗山背会堵车，建议工作日或早去'
+]
+};
+
+// Preparation Data
+const PREP={
+  group:[
+    {cat:'📱 通讯',items:['泰国电话卡 2张','马来西亚电话卡 1张','手机卡针']},
+    {cat:'🔌 电器',items:['转换插头','插排']},
+    {cat:'📋 文件与工具',items:['透明文件夹','机票行程单与酒店预订单','自拍杆','便携行李秤']},
+    {cat:'💰 现金',items:['泰铢现金 (共40,000泰铢)','马币现金 (共100马币)']}
+  ],
+  medicine:{
+    must:['肠胃消化类：铝碳酸镁片、奥美拉唑、乳酸菌素片、健胃消食片','晕车晕船类：晕车晕船药'],
+    rec:['止泻类：蒙脱石散（物理止泻）、黄连素（细菌性腹泻）','感冒退烧类：布洛芬（退烧止痛）','抗过敏类：氯雷他定（过敏、蚊虫叮咬）','外伤护理类：碘伏棉签、创可贴','降火类：降火冲剂（夏桑菊颗粒/板蓝根，吃榴莲降火）']
+  },
+  personal:[
+    {cat:'🧳 箱包',items:['行李箱（中号，限重20kg）','轻便小背包','斜挎包']},
+    {cat:'📁 证件与文件',items:['护照（有效期6个月以上）','护照复印件×1','身份证复印件×1']},
+    {cat:'📱 电子设备',items:['充电宝（有清晰容量标识）','充电线','耳机'],rec:['防水手机袋（浮潜必备）']},
+    {cat:'👗 衣物与穿搭',items:['夏季上衣/连衣裙（2–3套）','长裙或长裤（1条）','防晒服或薄外套（1件）','睡衣（1套）','泳衣（2套）','内衣裤/袜子（2–3套）','运动鞋（1双）','凉鞋/拖鞋（1双）','墨镜','速干浴巾斗篷','浮潜袜'],rec:['一次性内裤'],local:['遮阳帽','凉鞋/拖鞋']},
+    {cat:'🧴 个护与日用',items:['牙刷','沙滩鞋','晴雨伞'],rec:['压缩毛巾'],local:['牙膏','洗面奶','护肤品','防晒霜','驱蚊液']},
+    {cat:'💳 现金与支付',items:['人民币现金（建议每人400元）','银联卡 / Visa信用卡']}
+  ],
+  principles:[
+    '带一半，留一半：行李箱装一半，另一半留给清迈的裙子和曼谷的购物。',
+    '能买就不带：洗漱用品、防晒、凉鞋、夏装，泰国便宜又好买。',
+    '全程托运限重20kg：去程别超重，回程购物后注意分配行李。'
+  ]
+};
+
+// ── Rendering ──
+const $=s=>document.querySelector(s);
+const $$=s=>document.querySelectorAll(s);
+const LS_KEY='trip-checkin';
+
+function getChecked(){try{return JSON.parse(localStorage.getItem(LS_KEY)||'{}')}catch{return{}}}
+function saveChecked(d){localStorage.setItem(LS_KEY,JSON.stringify(d))}
+function ckId(c,di,ai){return `${c}-${di}-${ai}`}
+
+function render(){
+  // Tabs
+  const tabsEl=$('#tabs');
+  tabsEl.innerHTML=CITIES.map((c,i)=>`
+    <div class="tab${i===0?' active':''}" data-city="${c.id}">
+      <svg viewBox="0 0 24 24"><path d="${tabPath(c.id)}"/></svg>
+      <span>${c.name}</span>
+    </div>`).join('');
+  tabsEl.querySelectorAll('.tab').forEach(t=>t.onclick=()=>switchCity(t.dataset.city));
+
+  // City panels
+  const app=$('#app');
+  app.innerHTML=CITIES.map((c,i)=>`<section class="city${i===0?' active':''}" id="city-${c.id}">${renderCity(c)}</section>`).join('');
+
+  // Prep panel
+  renderPrep();
+
+  // Bind events
+  bindEvents();
+}
+
+function tabPath(id){
+  const paths={
+    cm:'M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1 15l-4-4 1.4-1.4L11 14.2l5.6-5.6L18 10l-7 7z',
+    bk:'M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z',
+    lp:'M2 21l10-17L22 21H2zm10-12v5m0 2h.01',
+    lk:'M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66c.96-2.3 2.29-4.34 4.29-5.5V20h4v-4h4v4h4V8h-4z',
+    pg:'M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.86 3.75 3.97V22h2.5v-9.03C11.34 12.86 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z'
+  };
+  return paths[id]||paths.cm;
+}
+
+function renderCity(c){
+  let h='';
+  // Hero
+  h+=`<div class="hero" style="background:${c.gradient}">
+    <div class="hero-bg" style="background-image:url('${c.img}')"></div>
+    <div class="hero-overlay" style="background:${c.gradient};opacity:.75"></div>
+    <div class="hero-content">
+      <div class="sub">${c.sub}</div>
+      <h2>${c.name}</h2>
+      <div class="dates">${c.dates} · ${c.name==='丽贝岛'?'4晚':'停留'}</div>
+    </div>
+  </div>`;
+
+  // History
+  if(c.history){
+    h+=`<div class="sec-hdr" data-sec="hist-${c.id}"><h3>📖 城市历史</h3><svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>`;
+    h+=`<div class="sec-body" id="hist-${c.id}">`;
+    if(c.intro) h+=`<p class="text-sm mb-12">${c.intro}</p>`;
+    h+=`<div class="timeline">${c.history.map(x=>`<div class="tl-year"><strong>${x.y}</strong> ${x.t}</div>`).join('')}</div></div>`;
+  }
+
+  // Etiquette
+  if(c.etiq){
+    h+=`<div class="sec-hdr mt-16" data-sec="etiq-${c.id}"><h3>🙏 ${c.id==='cm'?'泰国':'马来西亚'}礼仪</h3><svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>`;
+    h+=`<div class="sec-body" id="etiq-${c.id}"><div class="etiq-grid">${c.etiq.map(e=>`<div class="etiq-card"><div class="eicon">${e.i}</div><div class="etitle">${e.t}</div><div class="edesc">${e.d}</div></div>`).join('')}</div></div>`;
+  }
+
+  // Country shopping (only for first city in each country)
+  if(c.countryShop){
+    h+=`<div class="sec-hdr mt-16" data-sec="cshop-${c.id}"><h3>🎁 ${c.id==='cm'?'泰国':'马来西亚'}特产</h3><svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>`;
+    h+=`<div class="sec-body" id="cshop-${c.id}"><div class="food-grid">${c.countryShop.map(s=>`<div class="food-card"><div class="fname">${s.i} ${s.t}</div><div class="fdesc">${s.d}</div><div class="fshop">${s.l}</div></div>`).join('')}</div>${c.shopNote?`<p class="text-sm mt-8">${c.shopNote}</p>`:''}</div>`;
+  }
+
+  // Progress
+  const checked=getChecked();
+  const allItems=c.days.flatMap((_,di)=>(c.days[di].items||[]).map((_,ai)=>ckId(c.id,di,ai)));
+  const doneCount=allItems.filter(id=>checked[id]).length;
+  const totalCount=allItems.length;
+  const pct=totalCount?Math.round(doneCount/totalCount*100):0;
+  h+=`<div class="progress-wrap mt-16">
+    <div class="progress-label"><span>打卡进度</span><span>${doneCount}/${totalCount}</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+  </div>`;
+
+  // Days
+  h+=`<div class="mt-12">${c.days.map((day,di)=>renderDay(c,day,di)).join('')}</div>`;
+
+  // Food
+  if(c.food){
+    h+=`<div class="sec-hdr mt-16" data-sec="food-${c.id}"><h3>🍜 必吃推荐</h3><svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>`;
+    h+=`<div class="sec-body" id="food-${c.id}"><div class="food-grid">${c.food.map(f=>`<div class="food-card"><div class="fname">${f.n}</div><div class="fdesc">${f.d}</div><div class="fshop">${f.s}</div></div>`).join('')}</div>${c.foodNote?`<p class="text-sm mt-8">${c.foodNote}</p>`:''}</div>`;
+  }
+
+  // Shopping
+  if(c.shopping){
+    h+=`<div class="sec-hdr mt-16" data-sec="shop-${c.id}"><h3>🛍️ 购物指南</h3><svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>`;
+    h+=`<div class="sec-body" id="shop-${c.id}"><div class="shop-list">${c.shopping.map(s=>`<div class="shop-item"><div class="sname">${s.n}</div><div class="sdetail">${s.d}</div></div>`).join('')}</div>${c.shopTip?`<p class="text-sm mt-8">${c.shopTip}</p>`:''}</div>`;
+  }
+
+  // Night market
+  if(c.nightMarket){
+    h+=`<div class="sec-hdr mt-16" data-sec="nm-${c.id}"><h3>🌙 夜市</h3><svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>`;
+    h+=`<div class="sec-body" id="nm-${c.id}"><p class="text-sm">${c.nightMarket}</p>${c.dutyFree?`<p class="text-sm mt-8">${c.dutyFree}</p>`:''}${c.souvenir?`<p class="text-sm mt-8">${c.souvenir}</p>`:''}</div>`;
+  }
+
+  // Durian guide (Penang only)
+  if(c.id==='pg'){
+    h+=renderDurian();
+  }
+
+  return h;
+}
+
+function renderDay(c,day,di){
+  const checked=getChecked();
+  const items=day.items||[];
+  const doneCount=items.filter((_,ai)=>checked[ckId(c.id,di,ai)]).length;
+  const pct=items.length?Math.round(doneCount/items.length*100):0;
+
+  let h=`<div class="day" data-city="${c.id}" data-day="${di}">`;
+  h+=`<div class="day-hdr">
+    <div class="day-num" style="background:${c.color}">${di+1}</div>
+    <div class="day-info">
+      <div class="title">${day.d} ${day.wd} · ${day.t}</div>
+      <div class="subtitle">${day.s||''}</div>
+    </div>
+    <svg class="day-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+  </div>`;
+
+  h+=`<div class="day-body"><div class="day-content">`;
+
+  // Day progress
+  if(items.length){
+    h+=`<div class="day-prog"><span class="prog-text">${doneCount}/${items.length} 打卡</span><div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div></div>`;
+  }
+
+  // Activities (flip cards)
+  items.forEach((item,ai)=>{
+    const id=ckId(c.id,di,ai);
+    const isDone=!!checked[id];
+    h+=`<div class="act${isDone?' flipped':''}" data-id="${id}">
+      <div class="act-inner">
+        <div class="act-front">
+          <span class="icon">${item.i}</span>
+          <div class="info">
+            <div class="name">${item.t}</div>
+            ${item.n?`<div class="note">${item.n}</div>`:''}
+          </div>
+          ${item.ck?`<button class="ck-btn" onclick="doCheckin('${id}')">${isDone?'✓ 已打卡':'打卡'}</button>`:''}
+        </div>
+        <div class="act-back">
+          <div class="stamp-circle stamp-anim">✓</div>
+          <div class="ck-label">已打卡</div>
+          <div class="ck-time">${isDone?checked[id]:''}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  // Hotel
+  if(day.hotel){
+    h+=`<div class="info-card mt-8"><div class="label">🏨 住宿</div><div class="val"><strong>${day.hotel.n}</strong>`;
+    if(day.hotel.a) h+=`<br>${day.hotel.a}`;
+    if(day.hotel.p) h+=`<br>📞 ${day.hotel.p}`;
+    h+=`</div></div>`;
+  }
+
+  // Transport
+  if(day.hotel && day.hotel.transport){
+    h+=`<div class="info-card"><div class="label">🚕 交通</div><div class="val">${day.hotel.transport}</div></div>`;
+  }
+
+  // Note
+  if(day.note){
+    h+=`<div class="info-card"><div class="val text-center" style="white-space:pre-line;font-size:14px;color:var(--green)">${day.note}</div></div>`;
+  }
+
+  h+=`</div></div></div>`;
+  return h;
+}
+
+function renderDurian(){
+  let h=`<div class="sec-hdr mt-16" data-sec="durian"><h3>🦔 榴莲深度指南</h3><svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>`;
+  h+=`<div class="sec-body" id="durian">`;
+
+  h+=`<p class="text-sm mb-12">${DURIAN.fruits[0]}</p>`;
+
+  // Varieties table
+  h+=`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="durian-table">
+    <tr><th>品种</th><th>果肉</th><th>风味</th><th>RM/kg</th></tr>
+    ${DURIAN.vars.map(v=>`<tr><td><strong>${v.n}</strong><br><span class="text-sm">${v.a}</span></td><td>${v.f}</td><td>${v.t}</td><td>${v.p}</td></tr>`).join('')}
+  </table></div>`;
+  h+=`<p class="text-sm mt-8">💱 汇率参考：1 马币 ≈ 1.73 人民币</p>`;
+
+  // Farms
+  h+=`<div class="sec-hdr mt-16" data-sec="farms"><h3 style="font-size:15px">🌳 榴莲园推荐</h3><svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>`;
+  h+=`<div class="sec-body" id="farms"><div class="shop-list">${DURIAN.farms.map(f=>`<div class="shop-item"><div class="sname">${f.n}</div><div class="sdetail">${f.d}</div></div>`).join('')}</div></div>`;
+
+  // Cooling drinks
+  h+=`<div class="sec-hdr mt-12" data-sec="cooling"><h3 style="font-size:15px">🧊 降火饮品</h3><svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>`;
+  h+=`<div class="sec-body" id="cooling"><div class="food-grid">${DURIAN.cooling.map(x=>`<div class="food-card"><div class="fname">${x.n}</div><div class="fdesc">${x.d}</div><div class="fshop">${x.l}</div></div>`).join('')}</div></div>`;
+
+  // Tips
+  h+=`<div class="sec-hdr mt-12" data-sec="dtips"><h3 style="font-size:15px">💡 吃榴莲小贴士</h3><svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>`;
+  h+=`<div class="sec-body" id="dtips">${DURIAN.tips.map(t=>`<div class="prep-item"><span style="color:var(--accent)">•</span><span>${t}</span></div>`).join('')}</div>`;
+
+  h+=`</div>`;
+  return h;
+}
+
+function renderPrep(){
+  const panel=$('#prepPanel');
+  let h=`<button class="prep-close" onclick="togglePrep()">✕</button>
+  <div class="prep-title">📋 行前准备</div>`;
+
+  // Group supplies
+  h+=`<div class="prep-sec"><h4>👥 团体公用</h4>`;
+  PREP.group.forEach(g=>{
+    h+=`<div style="font-size:13px;font-weight:500;margin:8px 0 4px;color:var(--fg2)">${g.cat}</div>`;
+    g.items.forEach((item,i)=>{
+      const id=`g-${g.cat}-${i}`;
+      h+=`<div class="prep-item"><div class="prep-check" data-pid="${id}" onclick="togglePrepItem(this,'${id}')">✓</div><span>${item}</span></div>`;
+    });
+  });
+  h+=`</div>`;
+
+  // Medicine
+  h+=`<div class="prep-sec"><h4>💊 药品</h4>`;
+  h+=`<div style="font-size:13px;font-weight:500;margin:8px 0 4px;color:var(--green)">必要携带 ✓ 已备</div>`;
+  PREP.medicine.must.forEach((item,i)=>{
+    const id=`mm-${i}`;
+    h+=`<div class="prep-item"><div class="prep-check" data-pid="${id}" onclick="togglePrepItem(this,'${id}')">✓</div><span style="font-size:13px">${item}</span></div>`;
+  });
+  h+=`<div style="font-size:13px;font-weight:500;margin:8px 0 4px;color:var(--accent)">推荐携带</div>`;
+  PREP.medicine.rec.forEach((item,i)=>{
+    const id=`mr-${i}`;
+    h+=`<div class="prep-item"><div class="prep-check" data-pid="${id}" onclick="togglePrepItem(this,'${id}')">✓</div><span style="font-size:13px">${item}</span></div>`;
+  });
+  h+=`</div>`;
+
+  // Personal
+  h+=`<div class="prep-sec"><h4>🧍 个人准备</h4>`;
+  PREP.personal.forEach(p=>{
+    h+=`<div style="font-size:13px;font-weight:500;margin:8px 0 4px;color:var(--fg2)">${p.cat}</div>`;
+    p.items.forEach((item,i)=>{
+      const id=`p-${p.cat}-${i}`;
+      h+=`<div class="prep-item"><div class="prep-check" data-pid="${id}" onclick="togglePrepItem(this,'${id}')">✓</div><span style="font-size:13px">${item}</span></div>`;
+    });
+    if(p.rec){
+      h+=`<div style="font-size:12px;color:var(--muted);padding-left:28px;margin:2px 0">推荐：${p.rec.join('、')}</div>`;
+    }
+    if(p.local){
+      h+=`<div style="font-size:12px;color:var(--muted);padding-left:28px;margin:2px 0">🛒 可当地购买：${p.local.join('、')}</div>`;
+    }
+  });
+  h+=`</div>`;
+
+  // Principles
+  h+=`<div class="prep-sec"><h4>📏 行李原则</h4>`;
+  PREP.principles.forEach(p=>{
+    h+=`<div class="prep-note">${p}</div>`;
+  });
+  h+=`</div>`;
+
+  h+=`<div class="text-center text-sm mt-16" style="padding:20px 0">🌺 轻装上阵 · 少女旅行团 🌴</div>`;
+  panel.innerHTML=h;
+}
+
+// ── Interactions ──
+function switchCity(id){
+  $$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.city===id));
+  $$('.city').forEach(c=>c.classList.remove('active'));
+  document.getElementById('city-'+id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function doCheckin(id){
+  const checked=getChecked();
+  const el=document.querySelector(`.act[data-id="${id}"]`);
+  if(checked[id]){
+    delete checked[id];
+    el.classList.remove('flipped');
+  }else{
+    const now=new Date();
+    const ts=`${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    checked[id]=ts;
+    el.querySelector('.ck-time').textContent=ts;
+    el.querySelector('.stamp-circle').classList.remove('stamp-anim');
+    void el.querySelector('.stamp-circle').offsetWidth;
+    el.querySelector('.stamp-circle').classList.add('stamp-anim');
+    el.classList.add('flipped');
+    el.querySelector('.ck-btn').textContent='✓ 已打卡';
+  }
+  saveChecked(checked);
+  updateProgress();
+}
+
+function updateProgress(){
+  const checked=getChecked();
+  CITIES.forEach(c=>{
+    const cityEl=$(`#city-${c.id}`);
+    if(!cityEl)return;
+    const allItems=c.days.flatMap((_,di)=>(c.days[di].items||[]).map((_,ai)=>ckId(c.id,di,ai)));
+    const done=allItems.filter(id=>checked[id]).length;
+    const total=allItems.length;
+    const pct=total?Math.round(done/total*100):0;
+    const progEl=cityEl.querySelector('.progress-fill');
+    if(progEl)progEl.style.width=pct+'%';
+    const labelEl=cityEl.querySelector('.progress-label span:last-child');
+    if(labelEl)labelEl.textContent=`${done}/${total}`;
+
+    // Update day progress
+    c.days.forEach((_,di)=>{
+      const dayEl=cityEl.querySelector(`.day[data-day="${di}"]`);
+      if(!dayEl)return;
+      const items=c.days[di].items||[];
+      const dDone=items.filter((_,ai)=>checked[ckId(c.id,di,ai)]).length;
+      const dPct=items.length?Math.round(dDone/items.length*100):0;
+      const dFill=dayEl.querySelector('.prog-fill');
+      if(dFill)dFill.style.width=dPct+'%';
+      const dText=dayEl.querySelector('.prog-text');
+      if(dText)dText.textContent=`${dDone}/${items.length} 打卡`;
+    });
+  });
+}
+
+function togglePrep(){
+  const ov=$('#prepOv');
+  ov.classList.toggle('open');
+  if(ov.classList.contains('open'))restorePrepState();
+}
+
+const PREP_KEY='trip-prep';
+function togglePrepItem(el,id){
+  el.classList.toggle('done');
+  const items=getPrepState();
+  items[id]=el.classList.contains('done');
+  localStorage.setItem(PREP_KEY,JSON.stringify(items));
+}
+function getPrepState(){try{return JSON.parse(localStorage.getItem(PREP_KEY)||'{}')}catch{return{}}}
+function restorePrepState(){
+  const state=getPrepState();
+  $$('.prep-check').forEach(el=>{
+    const id=el.dataset.pid;
+    if(state[id])el.classList.add('done');
+  });
+}
+
+function bindEvents(){
+  // Collapsible section headers
+  document.addEventListener('click',e=>{
+    const hdr=e.target.closest('.sec-hdr');
+    if(hdr){
+      const secId=hdr.dataset.sec;
+      if(!secId)return;
+      const body=document.getElementById(secId);
+      if(body){
+        hdr.classList.toggle('open');
+        body.classList.toggle('open');
+      }
+    }
+
+    // Day collapse
+    const dayHdr=e.target.closest('.day-hdr');
+    if(dayHdr){
+      const day=dayHdr.closest('.day');
+      day.classList.toggle('open');
+    }
+  });
+}
+
+// ── Service Worker registration ──
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').then(reg=>{
+    console.log('SW registered',reg.scope);
+    // Check for updates on load
+    reg.update();
+  }).catch(err=>console.warn('SW failed',err));
+}
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded',()=>{
+  render();
+  // Auto-open first day of each city
+  setTimeout(()=>{
+    $$('.city').forEach(cityEl=>{
+      const firstDay=cityEl.querySelector('.day');
+      if(firstDay)firstDay.classList.add('open');
+    });
+  },100);
+});
+</script>
+</body>
+</html>
