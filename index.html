@@ -90,10 +90,17 @@ main{padding:8px 16px 80px}
 .ck-btn:active{transform:scale(.95)}
 
 /* Flip Back - Stamp */
-.act-back{position:absolute;inset:0;background:linear-gradient(135deg,var(--green),var(--green-l));color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotateY(180deg);gap:4px}
-.stamp-circle{width:64px;height:64px;border:3px dashed rgba(255,255,255,.6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:4px}
-.act-back .ck-label{font-size:15px;font-weight:600}
-.act-back .ck-time{font-size:11px;opacity:.75}
+.act-back{position:absolute;inset:0;background:linear-gradient(135deg,var(--green),var(--green-l));color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotateY(180deg);gap:4px;overflow:hidden}
+.stamp-circle{width:64px;height:64px;border:3px dashed rgba(255,255,255,.6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:4px;position:relative;z-index:2}
+.act-back .ck-label{font-size:15px;font-weight:600;position:relative;z-index:2}
+.act-back .ck-time{font-size:11px;opacity:.75;position:relative;z-index:2}
+.undo-btn{margin-top:10px;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:var(--pill);padding:4px 14px;font-size:11px;font-weight:500;cursor:pointer;font-family:var(--font);position:relative;z-index:2;transition:background .2s}
+.undo-btn:active{background:rgba(255,255,255,.35)}
+.sparkle{position:absolute;pointer-events:none;z-index:1}
+.sparkle-particle{position:absolute;width:4px;height:4px;border-radius:50%;animation:sparkleBurst .8s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes sparkleBurst{0%{opacity:1;transform:translate(0,0) scale(1)}50%{opacity:1}100%{opacity:0;transform:var(--sparkle-dx) scale(0)}}
+.sparkle-ring{position:absolute;top:50%;left:50%;width:0;height:0;border-radius:50%;border:2px solid rgba(255,255,255,.5);animation:sparkleRing .6s ease-out forwards;pointer-events:none;z-index:1}
+@keyframes sparkleRing{0%{width:0;height:0;opacity:1;margin:-0px}100%{width:120px;height:120px;opacity:0;margin:-60px}}
 
 /* Hotel/Transport cards */
 .info-card{background:var(--sand);border-radius:var(--rs);padding:10px 14px;margin-bottom:8px;font-size:13px}
@@ -650,10 +657,11 @@ function renderDay(c,day,di){
           </div>
           ${item.ck?`<button class="ck-btn" onclick="doCheckin('${id}')">${isDone?'✓ 已打卡':'打卡'}</button>`:''}
         </div>
-        <div class="act-back">
-          <div class="stamp-circle stamp-anim">✓</div>
+        <div class="act-back" onclick="doCheckin('${id}')">
+          <div class="stamp-circle${isDone?' stamp-anim':''}">✓</div>
           <div class="ck-label">已打卡</div>
           <div class="ck-time">${isDone?checked[id]:''}</div>
+          <button class="undo-btn" onclick="event.stopPropagation();doCheckin('${id}')">撤销打卡</button>
         </div>
       </div>
     </div>`;
@@ -782,6 +790,7 @@ function doCheckin(id){
   if(checked[id]){
     delete checked[id];
     el.classList.remove('flipped');
+    el.querySelector('.ck-btn').textContent='打卡';
   }else{
     const now=new Date();
     const ts=`${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -792,9 +801,30 @@ function doCheckin(id){
     el.querySelector('.stamp-circle').classList.add('stamp-anim');
     el.classList.add('flipped');
     el.querySelector('.ck-btn').textContent='✓ 已打卡';
+    spawnSparkles(el.querySelector('.act-back'));
   }
   saveChecked(checked);
   updateProgress();
+}
+
+function spawnSparkles(container){
+  const rect=container.getBoundingClientRect();
+  const cx=rect.width/2, cy=rect.height/2;
+  const colors=['#FFD700','#FF6B6B','#48CAE4','#FFFFFF','#FF9F1C','#52B788'];
+  for(let i=0;i<12;i++){
+    const p=document.createElement('div');
+    p.className='sparkle-particle';
+    const angle=(Math.PI*2/12)*i+Math.random()*0.3;
+    const dist=30+Math.random()*35;
+    const dx=Math.cos(angle)*dist, dy=Math.sin(angle)*dist;
+    p.style.cssText=`left:${cx}px;top:${cy}px;background:${colors[i%colors.length]};--sparkle-dx:translate(${dx}px,${dy}px);width:${3+Math.random()*4}px;height:${3+Math.random()*4}px;animation-delay:${Math.random()*0.15}s`;
+    container.appendChild(p);
+    setTimeout(()=>p.remove(),1000);
+  }
+  const ring=document.createElement('div');
+  ring.className='sparkle-ring';
+  container.appendChild(ring);
+  setTimeout(()=>ring.remove(),700);
 }
 
 function updateProgress(){
