@@ -1,7 +1,10 @@
-const CACHE_NAME = 'travel-guide-v1';
+const CACHE_NAME = 'travel-guide-v2';
 const STATIC_ASSETS = [
   './',
-  './index.html'
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // Install: cache the page itself
