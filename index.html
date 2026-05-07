@@ -93,10 +93,10 @@ main{padding:8px 16px calc(var(--safe-b) + 70px)}
 
 /* Stamp Overlay */
 .act-stamp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:3}
-.stamp-seal{width:72px;height:72px;border:3px dashed var(--green);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-15deg);background:rgba(45,106,79,.06);gap:1px}
-.stamp-seal .stamp-check{font-size:22px;color:var(--green);line-height:1}
-.stamp-seal .stamp-text{font-size:9px;font-weight:700;color:var(--green);letter-spacing:1px}
-.stamp-seal .stamp-time{font-size:7px;color:var(--green);opacity:.7}
+.stamp-seal{width:72px;height:72px;border:3px dashed #C8960C;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-15deg);background:rgba(200,150,12,.08);gap:1px}
+.stamp-seal .stamp-check{font-size:22px;color:#B8860B;line-height:1}
+.stamp-seal .stamp-text{font-size:9px;font-weight:700;color:#B8860B;letter-spacing:1px}
+.stamp-seal .stamp-time{font-size:7px;color:#B8860B;opacity:.7}
 
 /* Sparkles */
 .sparkle-particle{position:absolute;border-radius:50%;pointer-events:none;z-index:10;animation:sparkleBurst 1s cubic-bezier(.2,.8,.3,1) forwards}
@@ -660,8 +660,8 @@ function renderDay(c,day,di){
           ${item.n?`<div class="note">${item.n}</div>`:''}
         </div>
         ${item.ck?`<button class="ck-btn${isDone?' ck-done':''}" onclick="doCheckin('${id}')">${isDone?'撤销':'打卡'}</button>`:''}
+        ${isDone?`<div class="act-stamp"><div class="stamp-seal"><div class="stamp-check">✓</div><div class="stamp-text">已打卡</div><div class="stamp-time">${checked[id]}</div></div></div>`:''}
       </div>
-      ${isDone?`<div class="act-stamp"><div class="stamp-seal"><div class="stamp-check">✓</div><div class="stamp-text">已打卡</div><div class="stamp-time">${checked[id]}</div></div></div>`:''}
     </div>`;
   });
 
@@ -790,7 +790,8 @@ function doCheckin(id){
     el.classList.remove('checked');
     const btn=el.querySelector('.ck-btn');
     if(btn){btn.textContent='打卡';btn.classList.remove('ck-done')}
-    const stamp=el.querySelector('.act-stamp');
+    const front=el.querySelector('.act-front');
+    const stamp=front.querySelector('.act-stamp');
     if(stamp)stamp.remove();
   }else{
     const now=new Date();
@@ -799,15 +800,15 @@ function doCheckin(id){
     el.classList.add('checked');
     const btn=el.querySelector('.ck-btn');
     if(btn){btn.textContent='撤销';btn.classList.add('ck-done')}
-    el.insertAdjacentHTML('beforeend',`<div class="act-stamp"><div class="stamp-seal stamp-anim"><div class="stamp-check">✓</div><div class="stamp-text">已打卡</div><div class="stamp-time">${ts}</div></div></div>`);
-    spawnSparkles(el);
+    const front=el.querySelector('.act-front');
+    front.insertAdjacentHTML('beforeend',`<div class="act-stamp"><div class="stamp-seal stamp-anim"><div class="stamp-check">✓</div><div class="stamp-text">已打卡</div><div class="stamp-time">${ts}</div></div></div>`);
+    spawnSparkles(front);
   }
   saveChecked(checked);
   updateProgress();
 }
 
-function spawnSparkles(actEl){
-  const front=actEl.querySelector('.act-front');
+function spawnSparkles(front){
   const rect=front.getBoundingClientRect();
   const cx=rect.width/2, cy=rect.height/2;
   const colors=['#FFD700','#FF6B6B','#48CAE4','#FFFFFF','#FF9F1C','#52B788','#E07A5F','#7B2FF7'];
@@ -819,7 +820,7 @@ function spawnSparkles(actEl){
     const dx=Math.cos(angle)*dist, dy=Math.sin(angle)*dist;
     const size=6+Math.random()*10;
     p.style.cssText=`left:${cx}px;top:${cy}px;background:${colors[i%colors.length]};--sparkle-dx:translate(${dx}px,${dy}px);width:${size}px;height:${size}px;animation-delay:${Math.random()*0.15}s`;
-    actEl.appendChild(p);
+    front.appendChild(p);
     setTimeout(()=>p.remove(),1300);
   }
   const stars=['✦','✧','★','✶','✸'];
@@ -832,18 +833,18 @@ function spawnSparkles(actEl){
     const dx2=Math.cos(angle)*dist*1.5, dy2=Math.sin(angle)*dist*1.5;
     s.style.cssText=`left:${cx}px;top:${cy}px;color:${colors[i%colors.length]};--sparkle-dx:translate(${dx}px,${dy}px);--sparkle-dx2:translate(${dx2}px,${dy2}px);animation-delay:${Math.random()*0.2}s;font-size:${14+Math.random()*8}px`;
     s.textContent=stars[i%stars.length];
-    actEl.appendChild(s);
+    front.appendChild(s);
     setTimeout(()=>s.remove(),1500);
   }
   const ring=document.createElement('div');
   ring.className='sparkle-ring';
-  ring.style.cssText='border:3px solid rgba(45,106,79,.3)';
-  actEl.appendChild(ring);
+  ring.style.cssText='border:3px solid rgba(200,150,12,.3)';
+  front.appendChild(ring);
   setTimeout(()=>ring.remove(),900);
   const ring2=document.createElement('div');
   ring2.className='sparkle-ring';
   ring2.style.cssText='border:2px solid rgba(255,215,0,.4);animation-delay:.15s';
-  actEl.appendChild(ring2);
+  front.appendChild(ring2);
   setTimeout(()=>ring2.remove(),1050);
   const flash=document.createElement('div');
   flash.className='stamp-flash';
