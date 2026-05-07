@@ -78,33 +78,35 @@ main{padding:8px 16px calc(var(--safe-b) + 70px)}
 .day.open .day-body{max-height:5000px}
 .day-content{padding:12px 16px 16px}
 
-/* Activity Card (Flip) */
-.act{perspective:800px;margin-bottom:10px}
-.act-inner{position:relative;transition:transform .6s;transform-style:preserve-3d}
-.act.flipped .act-inner{transform:rotateY(180deg)}
-.act-front,.act-back{-webkit-backface-visibility:hidden;backface-visibility:hidden;border-radius:var(--rs);padding:12px 14px}
-.act-front{background:var(--sand);display:flex;align-items:flex-start;gap:10px}
+/* Activity Card */
+.act{position:relative;margin-bottom:10px}
+.act-front{background:var(--sand);display:flex;align-items:flex-start;gap:10px;border-radius:var(--rs);padding:12px 14px;position:relative;overflow:hidden}
+.act.checked .act-front{background:rgba(45,106,79,.06)}
 .act-front .icon{font-size:20px;flex-shrink:0;margin-top:1px}
 .act-front .info{flex:1;min-width:0}
 .act-front .info .name{font-size:14px;font-weight:500;line-height:1.4}
 .act-front .info .note{font-size:12px;color:var(--muted);margin-top:2px}
 .act-front .info .time{font-size:11px;color:var(--accent);font-weight:500}
-.ck-btn{flex-shrink:0;background:var(--green);color:#fff;border:none;border-radius:var(--pill);padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);align-self:center;white-space:nowrap;transition:all .2s}
+.ck-btn{flex-shrink:0;background:var(--green);color:#fff;border:none;border-radius:var(--pill);padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);align-self:center;white-space:nowrap;transition:all .2s;z-index:4;position:relative}
 .ck-btn:active{transform:scale(.95)}
+.ck-btn.ck-done{background:var(--muted);font-size:11px;padding:5px 10px}
 
-/* Flip Back - Stamp */
-.act-back{position:absolute;inset:0;background:linear-gradient(135deg,var(--green),var(--green-l));color:#fff;display:flex;align-items:center;justify-content:center;transform:rotateY(180deg);gap:14px;overflow:hidden;padding:8px 14px}
-.stamp-circle{width:48px;height:48px;border:3px dashed rgba(255,255,255,.6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;position:relative;z-index:2}
-.act-back .ck-label{font-size:15px;font-weight:600;position:relative;z-index:2}
-.act-back .ck-time{font-size:11px;opacity:.75;position:relative;z-index:2}
-.ck-text-wrap{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
-.undo-btn{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:var(--pill);padding:3px 12px;font-size:11px;font-weight:500;cursor:pointer;font-family:var(--font);position:relative;z-index:2;transition:background .2s;white-space:nowrap;flex-shrink:0}
-.undo-btn:active{background:rgba(255,255,255,.35)}
-.sparkle{position:absolute;pointer-events:none;z-index:1}
-.sparkle-particle{position:absolute;width:4px;height:4px;border-radius:50%;animation:sparkleBurst .8s cubic-bezier(.2,.8,.3,1) forwards}
-@keyframes sparkleBurst{0%{opacity:1;transform:translate(0,0) scale(1)}50%{opacity:1}100%{opacity:0;transform:var(--sparkle-dx) scale(0)}}
-.sparkle-ring{position:absolute;top:50%;left:50%;width:0;height:0;border-radius:50%;border:2px solid rgba(255,255,255,.5);animation:sparkleRing .6s ease-out forwards;pointer-events:none;z-index:1}
-@keyframes sparkleRing{0%{width:0;height:0;opacity:1;margin:-0px}100%{width:120px;height:120px;opacity:0;margin:-60px}}
+/* Stamp Overlay */
+.act-stamp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:3}
+.stamp-seal{width:72px;height:72px;border:3px dashed var(--green);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-15deg);background:rgba(45,106,79,.06);gap:1px}
+.stamp-seal .stamp-check{font-size:22px;color:var(--green);line-height:1}
+.stamp-seal .stamp-text{font-size:9px;font-weight:700;color:var(--green);letter-spacing:1px}
+.stamp-seal .stamp-time{font-size:7px;color:var(--green);opacity:.7}
+
+/* Sparkles */
+.sparkle-particle{position:absolute;border-radius:50%;pointer-events:none;z-index:10;animation:sparkleBurst 1s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes sparkleBurst{0%{opacity:1;transform:translate(0,0) scale(1.5)}40%{opacity:1}100%{opacity:0;transform:var(--sparkle-dx) scale(0)}}
+.sparkle-star{position:absolute;pointer-events:none;z-index:10;animation:sparkleStar 1.2s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes sparkleStar{0%{opacity:1;transform:translate(0,0) scale(0) rotate(0)}30%{opacity:1;transform:var(--sparkle-dx) scale(1.4) rotate(180deg)}100%{opacity:0;transform:var(--sparkle-dx2) scale(0) rotate(360deg)}}
+.sparkle-ring{position:absolute;top:50%;left:50%;border-radius:50%;pointer-events:none;z-index:9;animation:sparkleRing .8s ease-out forwards}
+@keyframes sparkleRing{0%{width:0;height:0;opacity:1;transform:translate(-50%,-50%)}100%{width:160px;height:160px;opacity:0;transform:translate(-50%,-50%)}}
+.stamp-flash{position:absolute;inset:0;background:rgba(255,255,255,.7);border-radius:var(--rs);animation:flashOut .4s ease-out forwards;z-index:5;pointer-events:none}
+@keyframes flashOut{0%{opacity:1}100%{opacity:0}}
 
 /* Hotel/Transport cards */
 .info-card{background:var(--sand);border-radius:var(--rs);padding:10px 14px;margin-bottom:8px;font-size:13px}
@@ -175,12 +177,11 @@ main{padding:8px 16px calc(var(--safe-b) + 70px)}
 .tag-ocean{background:rgba(0,180,216,.1);color:var(--ocean)}
 
 /* Animations */
-@keyframes stampIn{0%{transform:scale(2) rotate(-15deg);opacity:0}60%{transform:scale(.9) rotate(3deg);opacity:1}100%{transform:scale(1) rotate(0)}}
-.stamp-anim{animation:stampIn .5s cubic-bezier(.4,0,.2,1)}
+@keyframes stampIn{0%{transform:scale(2.5) rotate(-30deg);opacity:0}50%{transform:scale(.85) rotate(-10deg);opacity:1}75%{transform:scale(1.1) rotate(-18deg)}100%{transform:scale(1) rotate(-15deg)}}
+.stamp-anim{animation:stampIn .6s cubic-bezier(.4,0,.2,1)}
 
 /* Safari fixes */
 @supports (-webkit-touch-callout:none){
-  .act-back{position:absolute;inset:0}
   .day-body{transition:none}
   .sec-body{transition:none}
 }
@@ -651,25 +652,16 @@ function renderDay(c,day,di){
   items.forEach((item,ai)=>{
     const id=ckId(c.id,di,ai);
     const isDone=!!checked[id];
-    h+=`<div class="act${isDone?' flipped':''}" data-id="${id}">
-      <div class="act-inner">
-        <div class="act-front">
-          <span class="icon">${item.i}</span>
-          <div class="info">
-            <div class="name">${item.t}</div>
-            ${item.n?`<div class="note">${item.n}</div>`:''}
-          </div>
-          ${item.ck?`<button class="ck-btn" onclick="doCheckin('${id}')">${isDone?'✓ 已打卡':'打卡'}</button>`:''}
+    h+=`<div class="act${isDone?' checked':''}" data-id="${id}">
+      <div class="act-front">
+        <span class="icon">${item.i}</span>
+        <div class="info">
+          <div class="name">${item.t}</div>
+          ${item.n?`<div class="note">${item.n}</div>`:''}
         </div>
-        <div class="act-back" onclick="doCheckin('${id}')">
-          <div class="stamp-circle${isDone?' stamp-anim':''}">✓</div>
-          <div class="ck-text-wrap">
-            <div class="ck-label">已打卡</div>
-            <div class="ck-time">${isDone?checked[id]:''}</div>
-          </div>
-          <button class="undo-btn" onclick="event.stopPropagation();doCheckin('${id}')">撤销</button>
-        </div>
+        ${item.ck?`<button class="ck-btn${isDone?' ck-done':''}" onclick="doCheckin('${id}')">${isDone?'撤销':'打卡'}</button>`:''}
       </div>
+      ${isDone?`<div class="act-stamp"><div class="stamp-seal"><div class="stamp-check">✓</div><div class="stamp-text">已打卡</div><div class="stamp-time">${checked[id]}</div></div></div>`:''}
     </div>`;
   });
 
@@ -795,42 +787,68 @@ function doCheckin(id){
   const el=document.querySelector(`.act[data-id="${id}"]`);
   if(checked[id]){
     delete checked[id];
-    el.classList.remove('flipped');
-    el.querySelector('.ck-btn').textContent='打卡';
+    el.classList.remove('checked');
+    const btn=el.querySelector('.ck-btn');
+    if(btn){btn.textContent='打卡';btn.classList.remove('ck-done')}
+    const stamp=el.querySelector('.act-stamp');
+    if(stamp)stamp.remove();
   }else{
     const now=new Date();
     const ts=`${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
     checked[id]=ts;
-    el.querySelector('.ck-time').textContent=ts;
-    el.querySelector('.stamp-circle').classList.remove('stamp-anim');
-    void el.querySelector('.stamp-circle').offsetWidth;
-    el.querySelector('.stamp-circle').classList.add('stamp-anim');
-    el.classList.add('flipped');
-    el.querySelector('.ck-btn').textContent='✓ 已打卡';
-    spawnSparkles(el.querySelector('.act-back'));
+    el.classList.add('checked');
+    const btn=el.querySelector('.ck-btn');
+    if(btn){btn.textContent='撤销';btn.classList.add('ck-done')}
+    el.insertAdjacentHTML('beforeend',`<div class="act-stamp"><div class="stamp-seal stamp-anim"><div class="stamp-check">✓</div><div class="stamp-text">已打卡</div><div class="stamp-time">${ts}</div></div></div>`);
+    spawnSparkles(el);
   }
   saveChecked(checked);
   updateProgress();
 }
 
-function spawnSparkles(container){
-  const rect=container.getBoundingClientRect();
+function spawnSparkles(actEl){
+  const front=actEl.querySelector('.act-front');
+  const rect=front.getBoundingClientRect();
   const cx=rect.width/2, cy=rect.height/2;
-  const colors=['#FFD700','#FF6B6B','#48CAE4','#FFFFFF','#FF9F1C','#52B788'];
-  for(let i=0;i<12;i++){
+  const colors=['#FFD700','#FF6B6B','#48CAE4','#FFFFFF','#FF9F1C','#52B788','#E07A5F','#7B2FF7'];
+  for(let i=0;i<20;i++){
     const p=document.createElement('div');
     p.className='sparkle-particle';
-    const angle=(Math.PI*2/12)*i+Math.random()*0.3;
-    const dist=30+Math.random()*35;
+    const angle=(Math.PI*2/20)*i+Math.random()*0.3;
+    const dist=35+Math.random()*70;
     const dx=Math.cos(angle)*dist, dy=Math.sin(angle)*dist;
-    p.style.cssText=`left:${cx}px;top:${cy}px;background:${colors[i%colors.length]};--sparkle-dx:translate(${dx}px,${dy}px);width:${3+Math.random()*4}px;height:${3+Math.random()*4}px;animation-delay:${Math.random()*0.15}s`;
-    container.appendChild(p);
-    setTimeout(()=>p.remove(),1000);
+    const size=6+Math.random()*10;
+    p.style.cssText=`left:${cx}px;top:${cy}px;background:${colors[i%colors.length]};--sparkle-dx:translate(${dx}px,${dy}px);width:${size}px;height:${size}px;animation-delay:${Math.random()*0.15}s`;
+    actEl.appendChild(p);
+    setTimeout(()=>p.remove(),1300);
+  }
+  const stars=['✦','✧','★','✶','✸'];
+  for(let i=0;i<8;i++){
+    const s=document.createElement('div');
+    s.className='sparkle-star';
+    const angle=Math.random()*Math.PI*2;
+    const dist=30+Math.random()*50;
+    const dx=Math.cos(angle)*dist, dy=Math.sin(angle)*dist;
+    const dx2=Math.cos(angle)*dist*1.5, dy2=Math.sin(angle)*dist*1.5;
+    s.style.cssText=`left:${cx}px;top:${cy}px;color:${colors[i%colors.length]};--sparkle-dx:translate(${dx}px,${dy}px);--sparkle-dx2:translate(${dx2}px,${dy2}px);animation-delay:${Math.random()*0.2}s;font-size:${14+Math.random()*8}px`;
+    s.textContent=stars[i%stars.length];
+    actEl.appendChild(s);
+    setTimeout(()=>s.remove(),1500);
   }
   const ring=document.createElement('div');
   ring.className='sparkle-ring';
-  container.appendChild(ring);
-  setTimeout(()=>ring.remove(),700);
+  ring.style.cssText='border:3px solid rgba(45,106,79,.3)';
+  actEl.appendChild(ring);
+  setTimeout(()=>ring.remove(),900);
+  const ring2=document.createElement('div');
+  ring2.className='sparkle-ring';
+  ring2.style.cssText='border:2px solid rgba(255,215,0,.4);animation-delay:.15s';
+  actEl.appendChild(ring2);
+  setTimeout(()=>ring2.remove(),1050);
+  const flash=document.createElement('div');
+  flash.className='stamp-flash';
+  front.appendChild(flash);
+  setTimeout(()=>flash.remove(),500);
 }
 
 function updateProgress(){
